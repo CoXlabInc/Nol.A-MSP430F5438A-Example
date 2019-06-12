@@ -1,0 +1,2 @@
+# Nol.A-MSP430F5438A-Example
+Nol.A-SDK Example for TI MSP430F5438A (on MSP-TS430PZ5x100)
