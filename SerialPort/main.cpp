@@ -11,6 +11,7 @@ void setup() {
     System.getTimeSinceBoot(&t);
 
     printf("[%lu.%06lu] Hello World!\n", t.tv_sec, t.tv_usec);
+    printf("- VCC: %d mV\n", System.getSupplyVoltage());
 
     static float x = 1.1;
     printf("- float x:%f\n", x);
