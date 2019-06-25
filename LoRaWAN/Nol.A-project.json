@@ -1,0 +1,4 @@
+{
+ "board": "ti-msp430f5438a",
+ "options": "NOLA_DEBUG_LORAWAN=1 NOLA_DEBUG_SX127X=0"
+}
