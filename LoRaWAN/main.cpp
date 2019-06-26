@@ -152,7 +152,7 @@ void setup() {
     }
     delete frame;
 
-    // timerSend.startOneShot(INTERVAL_SEND);
+    timerSend.startOneShot(INTERVAL_SEND);
   });
 
   LoRaWAN.onReceive([](LoRaMac &lw, const LoRaMacFrame *frame) {
