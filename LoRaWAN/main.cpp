@@ -4,6 +4,7 @@
 
 #define INTERVAL_SEND 5000
 #define OVER_THE_AIR_ACTIVATION 1
+#define BLINK_TX 0
 
 #if (OVER_THE_AIR_ACTIVATION == 1)
 static const uint8_t devEui[] = "\x00\x11\x22\x33\x44\x55\x66\x77";
@@ -17,7 +18,7 @@ static uint32_t DevAddr = 0x06e632e8;
 
 SX1276Wiring SX1276(
   SpiA0,
-  P7_0,  //Reset
+  P8_0,  //Reset
   P3_1,  //CS
   -1,  //RxTx
   P1_1,  //DIO0
@@ -45,7 +46,6 @@ static void taskPeriodicSend(void *) {
     LoRaWAN.getMaxPayload(LoRaWAN.getCurrentDatarateIndex()) - LoRaWAN.getPendingMacCommandsLength()
   );
 
-  //! [How to send]
   LoRaMacFrame *f = new LoRaMacFrame(255);
   if (!f) {
     printf("* Out of memory\n");
@@ -76,18 +76,22 @@ static void taskPeriodicSend(void *) {
     timerSend.startOneShot(INTERVAL_SEND);
     return;
   }
-  //! [How to send]
 
+#if (BLINK_TX == 1)
   digitalWrite(P1_0, HIGH);
+#endif
 }
 
 void setup() {
   Serial3.begin(115200);
   System.setStandardOut(Serial3);
   printf("*** [TI MSP430F5438A] LoRaWAN using SX1276 ***\n");
+  printf("- Last reset reason:0x%02X\n", System.getResetReason());
 
+#if (BLINK_TX == 1)
   pinMode(P1_0, OUTPUT);
-  digitalWrite(P1_0, HIGH);
+  digitalWrite(P1_0, LOW);
+#endif
 
   timerSend.onFired(taskPeriodicSend, nullptr);
 
@@ -96,7 +100,9 @@ void setup() {
   });
 
   LoRaWAN.onSendDone([](LoRaMac &lw, LoRaMacFrame *frame) {
+#if (BLINK_TX == 1)
     digitalWrite(P1_0, LOW);
+#endif
     printf(
       "* Send done(%d): destined for port:%u, fCnt:0x%lX, Freq:%lu Hz, "
       "Power:%d dBm, # of Tx:%u, ",
@@ -146,7 +152,7 @@ void setup() {
     }
     delete frame;
 
-    timerSend.startOneShot(INTERVAL_SEND);
+    // timerSend.startOneShot(INTERVAL_SEND);
   });
 
   LoRaWAN.onReceive([](LoRaMac &lw, const LoRaMacFrame *frame) {
@@ -237,6 +243,7 @@ void setup() {
   postTask(taskPeriodicSend, nullptr);
 #endif
 
+#if (BLINK_TX == 1)
   digitalWrite(P1_0, LOW);
-
+#endif
 }

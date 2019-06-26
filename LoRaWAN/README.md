@@ -1,5 +1,7 @@
 # LoRaWAN using TI-MSP430F5438A + SX1276
 
+![Wiring](./wiring.jpeg)
+
 ## Pin Map
 
 |    MSP430    | SX1276 |   Console  |
@@ -15,7 +17,7 @@
 | P1.5 (J1-22) | DIO4   |            |
 | P1.6 (J1-23) | DIO5   |            |
 | P7.1 (J1-14) | RxTx   |            |
-| P7.0 (J1-13) | NRESET |            |
+| P8.0 (J3-57) | NRESET |            |
 | P9.4 (J3-72) |        | Serial3 Tx |
 | P9.5 (J3-73) |        | Serial3 Rx |
 
