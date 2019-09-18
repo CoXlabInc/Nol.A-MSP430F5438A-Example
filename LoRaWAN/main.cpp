@@ -1,4 +1,5 @@
 #include <cox.h>
+#include <algorithm>
 #include <LoRaMacKR920.hpp>
 #include "SX1276Wiring.hpp"
 
@@ -103,53 +104,10 @@ void setup() {
 #if (BLINK_TX == 1)
     digitalWrite(P1_0, LOW);
 #endif
-    printf(
-      "* Send done(%d): destined for port:%u, fCnt:0x%lX, Freq:%lu Hz, "
-      "Power:%d dBm, # of Tx:%u, ",
-      frame->result,
-      frame->port,
-      frame->fCnt,
-      frame->freq,
-      frame->power,
-      frame->numTrials
-    );
+    printf("* Send done(%d): ", frame->result);
+    frame->printTo(Serial3);
+    printf("\n");
 
-    if (frame->modulation == Radio::MOD_LORA) {
-      const char *strBW[] = {
-        "Unknown", "125kHz", "250kHz", "500kHz", "Unexpected value"
-      };
-      if (frame->meta.LoRa.bw > 3) {
-        frame->meta.LoRa.bw = (Radio::LoRaBW_t) 4;
-      }
-      printf("LoRa, SF:%u, BW:%s, ", frame->meta.LoRa.sf, strBW[frame->meta.LoRa.bw]);
-    } else if (frame->modulation == Radio::MOD_FSK) {
-      printf("FSK, ");
-    } else {
-      printf("Unkndown modulation, ");
-    }
-    if (frame->type == LoRaMacFrame::UNCONFIRMED) {
-      printf("UNCONFIRMED");
-    } else if (frame->type == LoRaMacFrame::CONFIRMED) {
-      printf("CONFIRMED");
-    } else if (frame->type == LoRaMacFrame::MULTICAST) {
-      printf("MULTICAST (error)");
-    } else if (frame->type == LoRaMacFrame::PROPRIETARY) {
-      printf("PROPRIETARY");
-    } else {
-      printf("unknown type");
-    }
-    printf(" frame\n");
-
-    for (uint8_t t = 0; t < frame->numTrials; t++) {
-      const char *strTxResult[] = {
-        "not started",
-        "success",
-        "no ack",
-        "air busy",
-        "Tx timeout",
-      };
-      printf("- [%u] %s\n", t, strTxResult[min(frame->txResult[t], 4)]);
-    }
     delete frame;
 
     timerSend.startOneShot(INTERVAL_SEND);
@@ -158,43 +116,13 @@ void setup() {
   LoRaWAN.onReceive([](LoRaMac &lw, const LoRaMacFrame *frame) {
     static uint32_t fCntDownPrev = 0;
 
-    printf("* Received a frame. Destined for port:%u, fCnt:0x%X", frame->port, frame->fCnt);
-
-    if (fCntDownPrev != 0 && fCntDownPrev == frame->fCnt) {
-      printf(" (duplicate)");
-    }
-    fCntDownPrev = frame->fCnt;
-    printf(", Freq:%lu Hz, RSSI:%d dB", frame->freq, frame->power);
-
-    if (frame->modulation == Radio::MOD_LORA) {
-      const char *strBW[] = {
-        "Unknown", "125kHz", "250kHz", "500kHz", "Unexpected value"
-      };
-      printf(
-        ", LoRa, SF:%u, BW:%s",
-        frame->meta.LoRa.sf, strBW[min(frame->meta.LoRa.bw, 4)]
-      );
-    } else if (frame->modulation == Radio::MOD_FSK) {
-      printf(", FSK");
-    } else {
-      printf(", Unkndown modulation");
-    }
-    if (frame->type == LoRaMacFrame::UNCONFIRMED) {
-      printf(", Type:UNCONFIRMED,");
-    } else if (frame->type == LoRaMacFrame::CONFIRMED) {
-      printf(", Type:CONFIRMED,");
-    } else if (frame->type == LoRaMacFrame::MULTICAST) {
-      printf(", Type:MULTICAST,");
-    } else if (frame->type == LoRaMacFrame::PROPRIETARY) {
-      printf(", Type:PROPRIETARY,");
-    } else {
-      printf(", unknown type,");
-    }
-
+    printf("* Received a frame:");
     for (uint8_t i = 0; i < frame->len; i++) {
       printf(" %02X", frame->buf[i]);
     }
-    printf(" (%u byte)\n", frame->len);
+    printf(" (");
+    frame->printTo(Serial3);
+    printf(")\n");
 
     if (
       (frame->type == LoRaMacFrame::CONFIRMED || lw.framePending) &&
