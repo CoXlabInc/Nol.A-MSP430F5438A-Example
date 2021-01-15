@@ -85,7 +85,7 @@ static void taskPeriodicSend(void *) {
 
 void setup() {
   Serial3.begin(115200);
-  System.setStandardOut(Serial3);
+  System.out = &Serial3;
   printf("*** [TI MSP430F5438A] LoRaWAN using SX1276 ***\n");
   printf("- Last reset reason:0x%02X\n", System.getResetReason());
 
