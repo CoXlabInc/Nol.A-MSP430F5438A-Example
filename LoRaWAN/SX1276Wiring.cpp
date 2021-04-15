@@ -30,3 +30,7 @@ bool SX1276Wiring::usingPaBoost(uint32_t channel) {
     return false;
   }
 }
+
+bool SX1276Wiring::checkFrequency(uint32_t f) {
+  return (f >= 862000000ul && f <= 1020000000ul);
+}
